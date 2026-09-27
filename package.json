@@ -1,0 +1,50 @@
+{
+  "name": "supplychain-ai",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k -n api,web -c blue,green npm:ui:api npm:ui:web",
+    "ui:api": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning --experimental-strip-types src/ui/server.ts",
+    "ui:web": "vite --config vite.config.ts",
+    "ui:build": "vite build --config vite.config.ts",
+    "ui:lint": "biome lint app/src src/ui vite.config.ts",
+    "build": "npm run typecheck && npm run ui:build",
+    "db:init": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning --experimental-strip-types src/database/init.ts",
+    "db:seed": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning --experimental-strip-types src/database/seed.ts --reset",
+    "db:reseed": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning --experimental-strip-types src/database/seed.ts --reset",
+    "db:validate": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning --experimental-strip-types src/database/validate.ts",
+    "tools:validate": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning --experimental-strip-types src/tools/validate.ts",
+    "ai:test": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning --experimental-strip-types src/agent/connectivity-test.ts",
+    "agent:test": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning --experimental-strip-types src/agent/run-agent-test.ts",
+    "agent:policy-test": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning --experimental-strip-types src/agent/run-policy-agent-test.ts",
+    "agent:mcp-test": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning --experimental-strip-types src/agent/run-mcp-agent-test.ts",
+    "rag:index": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning --experimental-strip-types src/context/indexer.ts",
+    "rag:test": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning --experimental-strip-types src/context/test-retrieval.ts",
+    "mcp:start": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning --experimental-strip-types src/mcp/server.ts",
+    "mcp:test": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning --experimental-strip-types src/mcp/validate-client.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.14",
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.5.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "concurrently": "^10.0.5",
+    "typescript": "^5.9.2",
+    "vite": "^8.3.1"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/client": "^2.1.0",
+    "@modelcontextprotocol/server": "^2.1.0",
+    "express": "^5.2.1",
+    "lucide-react": "^1.48.0",
+    "openai": "^7.23.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "react-markdown": "^10.1.0",
+    "zod": "^4.6.5"
+  }
+}
