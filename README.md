@@ -18,6 +18,12 @@ User Question
 
 All business data and policies are fictional and synthetic, created solely for demonstration.
 
+## What This Project Demonstrates
+
+SupplyChain AI is a hands-on portfolio project demonstrating how enterprise AI systems can combine structured operational data, unstructured business policies, agentic reasoning, and governed tool access. I designed and built the solution end to end using TypeScript/Node.js, OpenAI, MCP, RAG, SQLite, embeddings, and React/Vite. Its architecture keeps deterministic business calculations separate from LLM reasoning and controls which operational facts and policy passages enter the model's working context.
+
+**Context Engineering • Agentic AI • MCP • RAG • Tool Calling • Enterprise Data Integration Patterns • Evidence-Grounded Analysis • AI Guardrails**
+
 ## Demo
 
 The primary demonstration question is:
@@ -241,7 +247,7 @@ npm run agent:mcp-test
 
 **Evidence limitation:** The data associates delayed replenishment and service deterioration at the operational level, but has no direct delayed-PO-to-customer-order link. The agent should describe that as evidence-based interpretation rather than proven order-level causation.
 
-## What This Project Demonstrates
+## Implemented Capabilities
 
 - Designing controlled AI context from governed capabilities.
 - Integrating structured operational data with unstructured policy documents.
