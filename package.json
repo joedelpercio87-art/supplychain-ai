@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently -k -n api,web -c blue,green npm:ui:api npm:ui:web",
-	"start": "npm run ui:api",
-	"deploy:prepare": "npm run db:init && npm run db:seed && npm run rag:index",
+    "start": "node scripts/prepare-deployment.mjs && npm run ui:api",
+    "deploy:prepare": "npm run db:init && npm run db:seed && npm run rag:index",
     "ui:api": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning --experimental-strip-types src/ui/server.ts",
     "ui:web": "vite --config vite.config.ts",
     "ui:build": "vite build --config vite.config.ts",
