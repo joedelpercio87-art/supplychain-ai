@@ -1,10 +1,17 @@
-import express, { type Request, type Response } from 'express';
+﻿import express, { type Request, type Response } from 'express';
+import { rateLimit } from 'express-rate-limit';
 import { Client } from '@modelcontextprotocol/client';
 import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
 import { runMcpSupplyChainAgent, type McpAgentRunResult } from '../agent/mcpSupplyChainAgent.ts';
 
-const API_HOST = '127.0.0.1';
-const API_PORT = Number(process.env.UI_API_PORT ?? 5175);
+const API_HOST =
+  process.env.NODE_ENV === 'production'
+    ? '0.0.0.0'
+    : '127.0.0.1';
+
+const API_PORT = Number(
+  process.env.PORT ?? process.env.UI_API_PORT ?? 5175
+);
 const MCP_TOOLS = [
   'get_otif_metrics',
   'get_warehouse_performance',
@@ -192,7 +199,18 @@ async function callTool(client: Client, name: string, args: Record<string, unkno
   throw new Error('Local MCP tool returned an unexpected result format');
 }
 
+let activeInvestigations = 0;
+const MAX_CONCURRENT_INVESTIGATIONS = 2;
 const app = express();
+const investigationLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  message: {
+    error: 'Demo usage limit reached. Please try again in 15 minutes.'
+  }
+});
 app.disable('x-powered-by');
 app.use(express.json({ limit: '16kb' }));
 
@@ -253,27 +271,47 @@ app.get('/api/overview', async (_request: Request, response: Response) => {
   }
 });
 
-app.post('/api/investigate', async (request: Request, response: Response) => {
+app.post('/api/investigate', investigationLimiter, async (request: Request, response: Response) => {
   const body: unknown = request.body;
   const question = isRecord(body) ? body.question : undefined;
+
   if (typeof question !== 'string' || !question.trim() || question.trim().length > 4000) {
-    response.status(400).json({ error: 'Provide a question containing 1 to 4000 characters.' });
+    response.status(400).json({
+      error: 'Provide a question containing 1 to 4000 characters.'
+    });
     return;
   }
+
+  if (activeInvestigations >= MAX_CONCURRENT_INVESTIGATIONS) {
+    response.status(503).json({
+      error: 'The AI demo is currently busy. Please try again shortly.'
+    });
+    return;
+  }
+
+  activeInvestigations++;
+
   const observations: ToolObservation[] = [];
+
   try {
     const result = await runMcpSupplyChainAgent(question, {
       onToolResult: (observation) => observations.push(observation),
     });
+
     response.json({
       answer: result.answer,
       metadata: buildInvestigationMetadata(observations, result),
     });
   } catch {
-    response.status(500).json({ error: 'Investigation failed. Check the local MCP server and API configuration.' });
+    response.status(500).json({
+      error: 'Investigation failed. Check the local MCP server and API configuration.'
+    });
+  } finally {
+    activeInvestigations--;
   }
 });
-
 app.listen(API_PORT, API_HOST, () => {
   console.error(`SupplyChain AI UI API listening on http://${API_HOST}:${API_PORT}`);
 });
+
+

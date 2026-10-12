@@ -166,7 +166,16 @@ export async function runMcpSupplyChainAgent(question: string, options: McpAgent
     throw new Error('OPENAI_API_KEY is missing or still a placeholder');
   }
 
-  const client = new OpenAI({ apiKey });
+const investigationController = new AbortController();
+
+const investigationTimeout = setTimeout(() => {
+  investigationController.abort();
+}, 90_000);
+  const client = new OpenAI({
+  apiKey,
+  timeout: 30_000,
+  maxRetries: 0,
+});
   const mcpClient = new Client({ name: 'supplychain-ai-mcp-agent', version: '1.0.0' });
   const transport = new StdioClientTransport({
     command: process.execPath,
@@ -191,6 +200,7 @@ export async function runMcpSupplyChainAgent(question: string, options: McpAgent
 
     let response = await client.responses.create({
       model: MCP_SUPPLY_CHAIN_MODEL,
+      max_output_tokens: 2000,
       reasoning: { effort: 'medium' },
       instructions: SYSTEM_INSTRUCTIONS,
       input: normalizedQuestion,
@@ -218,6 +228,7 @@ export async function runMcpSupplyChainAgent(question: string, options: McpAgent
         console.log(JSON.stringify({ event: 'mcp_tool_call_limit', maxRounds: MCP_MAX_TOOL_CALL_ROUNDS, toolCallRounds }));
         response = await client.responses.create({
           model: MCP_SUPPLY_CHAIN_MODEL,
+ max_output_tokens: 2000,
           reasoning: { effort: 'medium' },
           instructions: SYSTEM_INSTRUCTIONS,
           previous_response_id: response.id,
@@ -278,6 +289,7 @@ export async function runMcpSupplyChainAgent(question: string, options: McpAgent
       }
       response = await client.responses.create({
         model: MCP_SUPPLY_CHAIN_MODEL,
+  max_output_tokens: 2000,
         reasoning: { effort: 'medium' },
         instructions: SYSTEM_INSTRUCTIONS,
         previous_response_id: response.id,
@@ -287,6 +299,7 @@ export async function runMcpSupplyChainAgent(question: string, options: McpAgent
       });
     }
   } finally {
+clearTimeout(investigationTimeout);
     await mcpClient.close();
   }
 }

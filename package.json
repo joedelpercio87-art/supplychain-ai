@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently -k -n api,web -c blue,green npm:ui:api npm:ui:web",
+	"start": "npm run ui:api",
+	"deploy:prepare": "npm run db:init && npm run db:seed && npm run rag:index",
     "ui:api": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning --experimental-strip-types src/ui/server.ts",
     "ui:web": "vite --config vite.config.ts",
     "ui:build": "vite build --config vite.config.ts",
@@ -40,6 +42,7 @@
     "@modelcontextprotocol/client": "^2.1.0",
     "@modelcontextprotocol/server": "^2.1.0",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.7.1",
     "lucide-react": "^1.48.0",
     "openai": "^7.23.0",
     "react": "^19.3.0",
